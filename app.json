@@ -11,6 +11,15 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow EarthWatch to access your camera."
+        }
+      ],
+      "expo-secure-store"
+    ],
     "assetBundlePatterns": [
       "**/*"
     ],
