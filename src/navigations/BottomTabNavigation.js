@@ -5,6 +5,7 @@ import {StyleSheet, View} from 'react-native';
 import {Feather} from '@expo/vector-icons';
 import {FontAwesome5} from '@expo/vector-icons';
 import {AntDesign} from '@expo/vector-icons';
+import MapScreen from '../screens/MapScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -75,6 +76,28 @@ function BottomTabs() {
                 ]}>
                 <AntDesign
                   name="database"
+                  size={30}
+                  color={focused ? 'white' : 'black'}
+                />
+              </View>
+            );
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Map"
+        component={MapScreen}
+        options={{
+          tabBarShowLabel: false,
+          tabBarIcon: ({focused, color, size}) => {
+            return (
+              <View
+                style={[
+                  styles.activeTabBackground,
+                  focused ? {backgroundColor: '#3498db'} : {},
+                ]}>
+                <Feather
+                  name="map"
                   size={30}
                   color={focused ? 'white' : 'black'}
                 />

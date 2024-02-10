@@ -24,12 +24,6 @@ const DataView = () => {
   const handleLinkPress = url => {
     Linking.openURL(url);
   };
-
-  const openGoogleMaps = (latitude, longitude) => {
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-    Linking.openURL(mapsUrl);
-  };
-
   const truncateText = (text, maxLength) => {
     if (text.length > maxLength) {
       return `${text.substring(0, maxLength)}...`;
@@ -39,7 +33,7 @@ const DataView = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.heading}>DataView</Text>
+      <Text style={styles.heading}>Data</Text>
       <View style={styles.tableHeader}>
         <Text style={styles.headerText}>Location Name</Text>
         <Text style={styles.headerText}>Latitude</Text>
@@ -48,10 +42,7 @@ const DataView = () => {
       </View>
 
       {fetchData.map((item, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.tableRow}
-          onPress={() => openGoogleMaps(item.latitude, item.longitude)}>
+        <TouchableOpacity key={index} style={styles.tableRow}>
           <Text style={styles.tableCell}>{item.location_name}</Text>
           <Text style={styles.tableCell}>{item.latitude}</Text>
           <Text style={styles.tableCell}>{item.longitude}</Text>
