@@ -25,12 +25,18 @@ const MapScreen = () => {
     <View style={styles.container}>
       <MapView
         style={styles.map}
+        showsUserLocation
+        showsMyLocationButton
+        showsBuildings
+        showsTraffic
+        s
         initialRegion={{
           latitude: 8.4606,
           longitude: -11.7799,
           latitudeDelta: 5,
           longitudeDelta: 5,
-        }}>
+        }}
+        loadingEnabled>
         {fetchData.map((item, index) => {
           const markerLatLng = {
             latitude: item.latitude,
@@ -101,6 +107,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'flex-end',
     alignItems: 'center',
+    marginTop: 20,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
