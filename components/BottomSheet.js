@@ -10,16 +10,17 @@ import {
 import * as Location from 'expo-location';
 import {supabase} from '../src/lib/supabase';
 import Lottie from 'lottie-react-native';
+
 const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
   const [locationName, setLocationName] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [autoDetectedLocation, setAutoDetectedLocation] = useState(null);
 
   useEffect(() => {
     // Auto-detect location when the component mounts
     autoDetectLocation();
   }, []);
+
   const extractFilename = uri => {
     const parts = uri.split('/');
     return parts[parts.length - 1];
@@ -40,9 +41,14 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
   };
 
   const handleSubmit = async () => {
+    if (!locationName || locationName.trim() === '') {
+      alert('Please enter a valid Location Name before submitting.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const imageName = extractFilename(image.uri);
+      const imageName = extractFilename(image);
       const cloudinaryUpload = async photo => {
         try {
           const data = new FormData();
@@ -68,29 +74,32 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
               image_url: url,
             })
             .select();
-          setLoading(false);
+
+          alert('Location submitted successfully!');
         } catch (error) {
           setLoading(false);
-          console.error(error);
+          console.error('main error', error);
           alert('An Error Occurred While Uploading');
         } finally {
           setLoading(false);
         }
       };
-
+      console.log(imageName);
       const source = {
-        uri: image.uri,
+        uri: image,
         type: 'image/jpeg',
         name: imageName,
       };
 
-      cloudinaryUpload(source);
+      await cloudinaryUpload(source);
 
       setImage(null);
       bottomSheetModalRef.current?.dismiss();
     } catch (error) {
       console.log(error);
       alert('Something went wrong');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,7 +131,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
           </TouchableOpacity>
         </View>
       ) : (
-        <Lottie source={'/assets/loading.json'} loop={true} />
+        <Lottie source={require('../assets/loading.json')} loop={true} />
       )}
     </BottomSheetModal>
   );
