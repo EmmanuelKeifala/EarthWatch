@@ -43,7 +43,7 @@ const DataView = () => {
 
       {fetchData.map((item, index) => (
         <TouchableOpacity key={index} style={styles.tableRow}>
-          <Text style={styles.tableCell}>{index + 1}</Text>
+          <Text style={styles.tableCell}>{item.location_name}</Text>
           <Text style={styles.tableCell}>{item.latitude}</Text>
           <Text style={styles.tableCell}>{item.longitude}</Text>
           <TouchableOpacity

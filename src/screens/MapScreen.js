@@ -25,12 +25,10 @@ const MapScreen = () => {
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        showsUserLocation
-        showsMyLocationButton
         showsBuildings
         showsTraffic
         s
-        initialRegion={{
+        region={{
           latitude: 8.4606,
           longitude: -11.7799,
           latitudeDelta: 5,
