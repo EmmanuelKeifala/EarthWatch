@@ -2,10 +2,9 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import GalleryUploads from '../screens/GalleryUpload';
 import DataView from '../screens/Dataview';
 import {StyleSheet, View} from 'react-native';
-import {Feather} from '@expo/vector-icons';
-import {FontAwesome5} from '@expo/vector-icons';
-import {AntDesign} from '@expo/vector-icons';
+import {AntDesign, FontAwesome5, Feather, Entypo} from '@expo/vector-icons';
 import MapScreen from '../screens/MapScreen';
+import SavedLocations from '../screens/SavedLocations';
 
 const Tab = createBottomTabNavigator();
 
@@ -98,6 +97,28 @@ function BottomTabs() {
                 ]}>
                 <Feather
                   name="map"
+                  size={30}
+                  color={focused ? 'white' : 'black'}
+                />
+              </View>
+            );
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Locations"
+        component={SavedLocations}
+        options={{
+          tabBarShowLabel: false,
+          tabBarIcon: ({focused, color, size}) => {
+            return (
+              <View
+                style={[
+                  styles.activeTabBackground,
+                  focused ? {backgroundColor: '#3498db'} : {},
+                ]}>
+                <Entypo
+                  name="location"
                   size={30}
                   color={focused ? 'white' : 'black'}
                 />

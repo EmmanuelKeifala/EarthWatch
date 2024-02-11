@@ -22,7 +22,7 @@ const GalleryUploads = () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
+    if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
     }
   };
@@ -45,7 +45,7 @@ const GalleryUploads = () => {
         <Image
           source={{uri: selectedImage}}
           style={styles.image}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       </View>
     );
@@ -56,7 +56,6 @@ const GalleryUploads = () => {
       <BottomSheetModalProvider>
         <View style={styles.container}>
           {selectedImage ? renderSelectedImage() : renderDropZone()}
-
           {selectedImage && (
             <View style={styles.buttonsContainer}>
               <TouchableOpacity
@@ -64,7 +63,6 @@ const GalleryUploads = () => {
                 onPress={() => bottomSheetModalRef.current?.present()}>
                 <Text style={styles.buttonText}>Upload</Text>
               </TouchableOpacity>
-
               <TouchableOpacity style={styles.clearButton} onPress={clearImage}>
                 <Text style={styles.buttonText}>Clear</Text>
               </TouchableOpacity>
@@ -88,7 +86,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 10,
+    backgroundColor: '#ecf0f1',
   },
   dropZone: {
     width: windowWidth * 0.8,
@@ -107,19 +106,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   imageContainer: {
-    width: '100%',
-    height: 300,
-    marginVertical: 20,
+    flex: 1,
+    width: '80%',
   },
   image: {
     flex: 1,
-    borderRadius: 10,
   },
   buttonsContainer: {
     flexDirection: 'row',
-    marginTop: 20,
     justifyContent: 'space-between',
     gap: 20,
+    marginBottom: 30,
   },
   uploadButton: {
     backgroundColor: '#27ae60',

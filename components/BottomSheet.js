@@ -6,20 +6,25 @@ import {
   View,
   TextInput,
   TouchableOpacity,
+  Image,
 } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import {supabase} from '../src/lib/supabase';
-import Lottie from 'lottie-react-native';
+import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
   const [locationName, setLocationName] = useState('');
   const [loading, setLoading] = useState(false);
   const [autoDetectedLocation, setAutoDetectedLocation] = useState(null);
+  const [savedLocations, setSavedLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
-    // Auto-detect location when the component mounts
     autoDetectLocation();
-  }, []);
+    loadSavedLocations();
+  }, [image]);
 
   const extractFilename = uri => {
     const parts = uri.split('/');
@@ -40,6 +45,18 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
     }
   };
 
+  const loadSavedLocations = async () => {
+    try {
+      const savedLocationsJson = await AsyncStorage.getItem('savedLocations');
+      if (savedLocationsJson) {
+        const parsedLocations = JSON.parse(savedLocationsJson);
+        setSavedLocations(parsedLocations);
+      }
+    } catch (error) {
+      console.error('Error loading saved locations from storage:', error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!locationName || locationName.trim() === '') {
       alert('Please enter a valid Location Name before submitting.');
@@ -49,57 +66,96 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
     setLoading(true);
     try {
       const imageName = extractFilename(image);
-      const cloudinaryUpload = async photo => {
-        try {
-          const data = new FormData();
-          data.append('file', photo);
-          data.append('upload_preset', 'ntyhh6x0');
-          data.append('cloud_name', 'dmbixlxfk');
-
-          const response = await fetch(
-            'https://api.cloudinary.com/v1_1/dmbixlxfk/image/upload',
-            {
-              method: 'post',
-              body: data,
-            },
-          );
-          const responseData = await response.json();
-          const url = responseData.secure_url;
-          await supabase
-            .from('dirtinfo')
-            .insert({
-              location_name: locationName,
-              latitude: autoDetectedLocation?.latitude,
-              longitude: autoDetectedLocation?.longitude,
-              image_url: url,
-            })
-            .select();
-
-          alert('Location submitted successfully!');
-        } catch (error) {
-          setLoading(false);
-          console.error('main error', error);
-          alert('An Error Occurred While Uploading');
-        } finally {
-          setLoading(false);
-        }
-      };
-      console.log(imageName);
-      const source = {
+      const photo = {
         uri: image,
         type: 'image/jpeg',
         name: imageName,
       };
 
-      await cloudinaryUpload(source);
+      const url = await uploadToCloudinary(photo);
 
-      setImage(null);
-      bottomSheetModalRef.current?.dismiss();
+      await saveLocationToSupabase(url);
+
+      alert('Location submitted successfully!');
     } catch (error) {
-      console.log(error);
+      console.error('Error:', error);
       alert('Something went wrong');
     } finally {
       setLoading(false);
+      setImage(null);
+      bottomSheetModalRef.current?.dismiss();
+    }
+  };
+
+  const handleLocationSelect = value => {
+    setSelectedLocation(value);
+    const selectedLocation = savedLocations.find(
+      location => location.name === value,
+    );
+    if (selectedLocation) {
+      setLocationName(selectedLocation.name);
+      setAutoDetectedLocation({
+        latitude: selectedLocation.coordinates.latitude,
+        longitude: selectedLocation.coordinates.longitude,
+      });
+    }
+  };
+
+  const handleDeleteLocation = async () => {
+    try {
+      const updatedLocations = savedLocations.filter(
+        location => location.name !== selectedLocation,
+      );
+      setSavedLocations(updatedLocations);
+      await AsyncStorage.setItem(
+        'savedLocations',
+        JSON.stringify(updatedLocations),
+      );
+      setSelectedLocation(null);
+      setAutoDetectedLocation(null);
+    } catch (error) {
+      console.error('Error deleting location:', error);
+      alert('Something went wrong');
+    }
+  };
+
+  const uploadToCloudinary = async photo => {
+    try {
+      const data = new FormData();
+      data.append('file', photo);
+      data.append('upload_preset', 'ntyhh6x0');
+      data.append('cloud_name', 'dmbixlxfk');
+
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/dmbixlxfk/image/upload',
+        {
+          method: 'post',
+          body: data,
+        },
+      );
+
+      const responseData = await response.json();
+      return responseData.secure_url;
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      throw error;
+    }
+  };
+
+  const saveLocationToSupabase = async url => {
+    try {
+      await supabase
+        .from('dirtinfo')
+        .insert({
+          location_name: locationName,
+          latitude: autoDetectedLocation?.latitude,
+          longitude: autoDetectedLocation?.longitude,
+          image_url: url,
+        })
+        .select();
+    } catch (error) {
+      console.error('Error saving location to Supabase:', error);
+      throw error;
     }
   };
 
@@ -110,7 +166,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
       snapPoints={['48%', '60%']}>
       {!loading ? (
         <View style={styles.container}>
-          <Text style={styles.heading}>Add Location</Text>
+          <Text style={styles.heading}>Submission Page</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter Location Name"
@@ -119,23 +175,51 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
           />
           {autoDetectedLocation && (
             <Text style={styles.autoDetectedLocation}>
-              Auto-Detected Location:{' '}
+              Location:{' '}
               {`Lat: ${autoDetectedLocation.latitude}, Long: ${autoDetectedLocation.longitude}`}
             </Text>
           )}
           <TouchableOpacity style={styles.button} onPress={autoDetectLocation}>
             <Text style={styles.buttonText}>Auto-Detect Location</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          {savedLocations.length > 0 && (
+            <View style={styles.pickerContainer}>
+              <Picker
+                style={styles.picker}
+                selectedValue={selectedLocation}
+                onValueChange={itemValue => handleLocationSelect(itemValue)}>
+                <Picker.Item label="Select a Saved Location" value={null} />
+                {savedLocations.map(location => (
+                  <Picker.Item
+                    key={location.coordinates.latitude}
+                    label={location.name}
+                    value={location.name}
+                  />
+                ))}
+              </Picker>
+            </View>
+          )}
+          {savedLocations.length > 0 && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleDeleteLocation}>
+              <Text style={styles.buttonText}>Delete Selected Location</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <Lottie
-          source={require('../assets/loading.json')}
-          loop={true}
-          style={{width: 50, height: 50}}
-        />
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <LottieView
+            source={require('../assets/loading.json')}
+            autoPlay
+            loop
+            style={{width: '100%', height: 200}}
+            resizeMode="contain"
+          />
+        </View>
       )}
     </BottomSheetModal>
   );
@@ -149,23 +233,32 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   heading: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
+    borderRadius: 8,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: '#4285f4',
     padding: 10,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 10,
+  },
+  submitButton: {
+    backgroundColor: '#34a853',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
   buttonText: {
     color: 'white',
@@ -173,6 +266,21 @@ const styles = StyleSheet.create({
   },
   autoDetectedLocation: {
     marginBottom: 20,
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#333',
+  },
+  pickerContainer: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 20,
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  picker: {
+    flex: 1,
   },
 });
 
