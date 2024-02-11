@@ -131,7 +131,11 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
           </TouchableOpacity>
         </View>
       ) : (
-        <Lottie source={require('../assets/loading.json')} loop={true} />
+        <Lottie
+          source={require('../assets/loading.json')}
+          loop={true}
+          style={{width: 50, height: 50}}
+        />
       )}
     </BottomSheetModal>
   );

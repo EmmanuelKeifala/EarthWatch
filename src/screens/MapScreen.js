@@ -1,9 +1,9 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Dimensions} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import MapView, {Marker} from 'react-native-maps';
 import getData from '../lib/getData';
 import {Image, Modal, TouchableOpacity} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 
 const MapScreen = () => {
   const [fetchData, setFetchData] = useState([]);
@@ -21,19 +21,26 @@ const MapScreen = () => {
     setSelectedMarker(marker);
     setModalVisible(true);
   };
+  const {width, height} = Dimensions.get('window');
+  const region = {
+    latitude: 8.4606,
+    longitude: -11.7799,
+    latitudeDelta: 5,
+    longitudeDelta: 0.0922 * (width / height),
+  };
   return (
     <View style={styles.container}>
       <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
         showsBuildings
         showsTraffic
         s
-        region={{
-          latitude: 8.4606,
-          longitude: -11.7799,
-          latitudeDelta: 5,
-          longitudeDelta: 5,
-        }}
+        showsCompass
+        showsUserLocation
+        sh
+        showsMyLocationButton
+        region={region}
         loadingEnabled>
         {fetchData.map((item, index) => {
           const markerLatLng = {
@@ -45,8 +52,7 @@ const MapScreen = () => {
               key={index}
               coordinate={markerLatLng}
               title={item.location_name}
-              onPress={() => handleMarkerPress(item)}
-            />
+              onPress={() => handleMarkerPress(item)}></Marker>
           );
         })}
       </MapView>
