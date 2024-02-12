@@ -75,7 +75,6 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
       const url = await uploadToCloudinary(photo);
 
       await saveLocationToSupabase(url);
-
       alert('Location submitted successfully!');
     } catch (error) {
       console.error('Error:', error);

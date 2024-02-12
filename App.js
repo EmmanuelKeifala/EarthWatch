@@ -17,18 +17,8 @@ const App = () => {
           component={BottomTabs}
           options={{animation: 'default'}}
         />
-        {/* <Stack.Screen
-          name="Camera"
-          component={CameraTab}
-          options={{animation: 'slide_from_right'}}
-        />
-        <Stack.Screen
-          name="Phone Uploads"
-          component={GalleryUploads}
-          options={{animation: 'slide_from_right'}}
-        /> */}
       </Stack.Navigator>
-      <StatusBar style="black" />
+      <StatusBar style="auto" />
     </NavigationContainer>
   );
 };

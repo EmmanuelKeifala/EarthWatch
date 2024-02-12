@@ -33,7 +33,7 @@ const DataView = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.heading}>Data</Text>
+      <Text style={styles.heading}>Data Page</Text>
       <View style={styles.tableHeader}>
         <Text style={styles.headerText}>Location Name</Text>
         <Text style={styles.headerText}>Latitude</Text>

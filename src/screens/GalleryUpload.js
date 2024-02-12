@@ -12,7 +12,6 @@ import {Ionicons} from '@expo/vector-icons';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import BottomSheet from '../../components/BottomSheet';
-
 const GalleryUploads = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const bottomSheetModalRef = useRef(null);
