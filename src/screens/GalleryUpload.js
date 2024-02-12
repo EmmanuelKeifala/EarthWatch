@@ -12,16 +12,18 @@ import {Ionicons} from '@expo/vector-icons';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import BottomSheet from '../../components/BottomSheet';
+
 const GalleryUploads = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const bottomSheetModalRef = useRef(null);
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.cancelled) {
       setSelectedImage(result.assets[0].uri);
     }
   };
@@ -29,10 +31,11 @@ const GalleryUploads = () => {
   const clearImage = () => {
     setSelectedImage(null);
   };
+
   const renderDropZone = () => {
     return (
       <TouchableOpacity style={styles.dropZone} onPress={pickImage}>
-        <Ionicons name="cloud-upload-outline" size={40} color="black" />
+        <Ionicons name="cloud-upload-outline" size={40} color="#3498db" />
         <Text style={styles.dropZoneText}>Tap to Pick an Image</Text>
       </TouchableOpacity>
     );
@@ -44,7 +47,7 @@ const GalleryUploads = () => {
         <Image
           source={{uri: selectedImage}}
           style={styles.image}
-          resizeMode="contain"
+          resizeMode="cover"
         />
       </View>
     );
@@ -83,16 +86,15 @@ const windowWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 10,
     backgroundColor: '#ecf0f1',
   },
   dropZone: {
     width: windowWidth * 0.8,
     aspectRatio: 1,
     borderWidth: 2,
-    borderColor: 'black',
+    borderColor: '#3498db',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -100,22 +102,26 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   dropZoneText: {
-    color: 'black',
+    color: '#3498db',
     marginTop: 10,
     fontSize: 16,
   },
   imageContainer: {
     flex: 1,
     width: '80%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginTop: 30,
   },
   image: {
     flex: 1,
+    borderRadius: 10,
   },
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 20,
-    marginBottom: 30,
+    marginVertical: 30,
   },
   uploadButton: {
     backgroundColor: '#27ae60',

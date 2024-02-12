@@ -4,10 +4,9 @@ import {
   Text,
   View,
   TextInput,
-  Button,
-  FlatList,
   TouchableOpacity,
-  Modal,
+  FlatList,
+  Button,
 } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +17,7 @@ const SavedLocations = ({navigation}) => {
   const [savedLocations, setSavedLocations] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  // Load saved locations from local storage on initial mount
+
   useEffect(() => {
     const loadSavedLocations = async () => {
       try {
@@ -33,9 +32,8 @@ const SavedLocations = ({navigation}) => {
     };
 
     loadSavedLocations();
-  }, []); // Empty dependency array ensures this effect runs only on mount
+  }, []);
 
-  // Use Effect to watch for changes in AsyncStorage and update state
   useEffect(() => {
     const storageListener = async () => {
       try {
@@ -49,12 +47,10 @@ const SavedLocations = ({navigation}) => {
       }
     };
 
-    // Listen for changes in AsyncStorage when the component is mounted
     const focusListener = navigation.addListener('focus', () => {
       storageListener();
     });
 
-    // Cleanup
     return () => {
       focusListener();
     };
@@ -86,7 +82,6 @@ const SavedLocations = ({navigation}) => {
         return;
       }
 
-      // Save location to local storage
       const newLocation = {
         name: locationName,
         coordinates: currentLocation,
@@ -100,7 +95,6 @@ const SavedLocations = ({navigation}) => {
         JSON.stringify(updatedLocations),
       );
 
-      // Clear input and update UI
       setLocationName('');
       setCurrentLocation(null);
     } catch (error) {
@@ -162,24 +156,20 @@ const SavedLocations = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.heading, {color: '#3498db'}]}>Saved Locations</Text>
+      <Text style={styles.heading}>Saved Locations</Text>
       {savedLocations.length > 0 && (
         <FlatList
           data={savedLocations}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({item, index}) => (
-            <View style={[styles.locationItem, {borderColor: '#ccc'}]}>
-              <Text>{item.name}</Text>
+            <View style={styles.locationItem}>
+              <Text style={styles.locationName}>{item.name}</Text>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity onPress={() => editLocation(index)}>
-                  <Text style={[styles.editButton, {color: '#3498db'}]}>
-                    Edit
-                  </Text>
+                  <Text style={styles.editButton}>Edit</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => deleteLocation(index)}>
-                  <Text style={[styles.deleteButton, {color: '#e74c3c'}]}>
-                    Delete
-                  </Text>
+                  <Text style={styles.deleteButton}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -188,18 +178,18 @@ const SavedLocations = ({navigation}) => {
       )}
 
       {currentLocation ? (
-        <Text style={[styles.currentLocation, {color: '#333333'}]}>
+        <Text style={styles.currentLocation}>
           Current Location: {currentLocation.latitude},{' '}
           {currentLocation.longitude}
         </Text>
       ) : (
-        <Text style={[styles.currentLocation, {color: '#333333'}]}>
+        <Text style={styles.currentLocation}>
           Current Location: Tap on Detect Location
         </Text>
       )}
 
       <TextInput
-        style={[styles.input, {borderColor: '#ccc'}]}
+        style={styles.input}
         placeholder="Enter location name"
         value={locationName}
         onChangeText={text => setLocationName(text)}
@@ -241,44 +231,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#ecf0f1',
+    backgroundColor: '#ffffff',
   },
   heading: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 20,
+    color: '#3498db',
   },
   locationItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
-    borderWidth: 1,
     padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  locationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
   },
   buttonContainer: {
     flexDirection: 'row',
   },
   editButton: {
+    fontSize: 16,
+    color: '#3498db',
     marginRight: 10,
   },
   deleteButton: {
+    fontSize: 16,
     color: '#e74c3c',
   },
   currentLocation: {
     marginTop: 10,
     marginBottom: 10,
     fontSize: 14,
+    color: '#333333',
   },
   input: {
     height: 40,
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 10,
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
   },
   buttonsContainer: {
     flexDirection: 'row',
