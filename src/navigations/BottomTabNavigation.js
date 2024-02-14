@@ -5,10 +5,23 @@ import {StyleSheet, View} from 'react-native';
 import {AntDesign, FontAwesome5, Feather, Entypo} from '@expo/vector-icons';
 import MapScreen from '../screens/MapScreen';
 import SavedLocations from '../screens/SavedLocations';
+import * as Network from 'expo-network';
+import {useState} from 'react';
+import {useEffect} from 'react';
 
 const Tab = createBottomTabNavigator();
 
-function BottomTabs() {
+const BottomTabs = () => {
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const handleConnectivityChange = async () => {
+      const currentNetworkStatus = await Network.getNetworkStateAsync();
+      setIsConnected(currentNetworkStatus);
+    };
+
+    handleConnectivityChange();
+  }, []);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -18,26 +31,6 @@ function BottomTabs() {
           backgroundColor: 'white',
         },
       }}>
-      {/* CameraTab Screen */}
-      {/* <Tab.Screen
-        name="Camera"
-        component={CameraTab}
-        options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({ focused, color, size }) => {
-            return (
-              <View
-                style={[
-                  styles.activeTabBackground,
-                  focused ? { backgroundColor: '#3498db' } : {},
-                ]}>
-                <Feather name="camera" size={24} color={focused ? 'white' : 'green'} />
-              </View>
-            );
-          },
-        }}
-      /> */}
-      {/* GalleryUploads Screen */}
       <Tab.Screen
         name="Phone Uploads"
         component={GalleryUploads}
@@ -61,50 +54,54 @@ function BottomTabs() {
         }}
       />
       {/* DataView Screen */}
-      <Tab.Screen
-        name="DataView"
-        component={DataView}
-        options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({focused, color, size}) => {
-            return (
-              <View
-                style={[
-                  styles.activeTabBackground,
-                  focused ? {backgroundColor: '#3498db'} : {},
-                ]}>
-                <AntDesign
-                  name="database"
-                  size={30}
-                  color={focused ? 'white' : 'black'}
-                />
-              </View>
-            );
-          },
-        }}
-      />
-      <Tab.Screen
-        name="Map"
-        component={MapScreen}
-        options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({focused, color, size}) => {
-            return (
-              <View
-                style={[
-                  styles.activeTabBackground,
-                  focused ? {backgroundColor: '#3498db'} : {},
-                ]}>
-                <Feather
-                  name="map"
-                  size={30}
-                  color={focused ? 'white' : 'black'}
-                />
-              </View>
-            );
-          },
-        }}
-      />
+      {isConnected.isConnected && (
+        <Tab.Screen
+          name="DataView"
+          component={DataView}
+          options={{
+            tabBarShowLabel: false,
+            tabBarIcon: ({focused, color, size}) => {
+              return (
+                <View
+                  style={[
+                    styles.activeTabBackground,
+                    focused ? {backgroundColor: '#3498db'} : {},
+                  ]}>
+                  <AntDesign
+                    name="database"
+                    size={30}
+                    color={focused ? 'white' : 'black'}
+                  />
+                </View>
+              );
+            },
+          }}
+        />
+      )}
+      {isConnected.isConnected && (
+        <Tab.Screen
+          name="Map"
+          component={MapScreen}
+          options={{
+            tabBarShowLabel: false,
+            tabBarIcon: ({focused, color, size}) => {
+              return (
+                <View
+                  style={[
+                    styles.activeTabBackground,
+                    focused ? {backgroundColor: '#3498db'} : {},
+                  ]}>
+                  <Feather
+                    name="map"
+                    size={30}
+                    color={focused ? 'white' : 'black'}
+                  />
+                </View>
+              );
+            },
+          }}
+        />
+      )}
       <Tab.Screen
         name="Locations"
         component={SavedLocations}
@@ -129,7 +126,7 @@ function BottomTabs() {
       />
     </Tab.Navigator>
   );
-}
+};
 
 const styles = StyleSheet.create({
   activeTabBackground: {

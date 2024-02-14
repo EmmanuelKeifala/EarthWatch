@@ -23,7 +23,7 @@ const GalleryUploads = () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
+    if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
     }
   };
@@ -37,6 +37,9 @@ const GalleryUploads = () => {
       <TouchableOpacity style={styles.dropZone} onPress={pickImage}>
         <Ionicons name="cloud-upload-outline" size={40} color="#3498db" />
         <Text style={styles.dropZoneText}>Tap to Pick an Image</Text>
+        <Text style={styles.instructionText}>
+          Select an image from your gallery to get started!
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -105,6 +108,12 @@ const styles = StyleSheet.create({
     color: '#3498db',
     marginTop: 10,
     fontSize: 16,
+  },
+  instructionText: {
+    color: '#777',
+    marginTop: 10,
+    fontSize: 14,
+    textAlign: 'center',
   },
   imageContainer: {
     flex: 1,

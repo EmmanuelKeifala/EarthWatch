@@ -8,24 +8,28 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+
 import {Picker} from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import {supabase} from '../src/lib/supabase';
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
+const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [locationName, setLocationName] = useState('');
   const [loading, setLoading] = useState(false);
   const [autoDetectedLocation, setAutoDetectedLocation] = useState(null);
   const [savedLocations, setSavedLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [isLocationSelected, setIsLocationSelected] = useState(false);
 
   useEffect(() => {
     autoDetectLocation();
+  }, [navigation]);
+  useEffect(() => {
     loadSavedLocations();
-  }, [image]);
-
+  }, [savedLocations]);
   const extractFilename = uri => {
     const parts = uri.split('/');
     return parts[parts.length - 1];
@@ -35,13 +39,29 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
     try {
       const {status} = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({});
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
+        });
         setAutoDetectedLocation(location.coords);
       } else {
         console.log('Location permission denied');
+        Toast.show({
+          type: 'error',
+          text1: 'Permission',
+          text2: 'Location permission denied',
+          text1Style: styles.text1,
+          text2Style: styles.text2,
+        });
       }
     } catch (error) {
       console.error('Error getting current location:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Location Error',
+        text2: 'Error getting current location',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     }
   };
 
@@ -54,12 +74,25 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
       }
     } catch (error) {
       console.error('Error loading saved locations from storage:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Location Error',
+        text2: 'Error loading saved locations',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     }
   };
 
   const handleSubmit = async () => {
     if (!locationName || locationName.trim() === '') {
-      alert('Please enter a valid Location Name before submitting.');
+      Toast.show({
+        type: 'info',
+        text1: 'Location and Location name',
+        text2: 'Please enter a valid location name before submitting',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
       return;
     }
 
@@ -75,10 +108,22 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
       const url = await uploadToCloudinary(photo);
 
       await saveLocationToSupabase(url);
-      alert('Location submitted successfully!');
+      Toast.show({
+        type: 'success',
+        text1: 'Location Submitted',
+        text2: 'Location submitted successfully!',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     } catch (error) {
       console.error('Error:', error);
-      alert('Something went wrong');
+      Toast.show({
+        type: 'error',
+        text1: 'Upload Error',
+        text2: 'Something went wrong',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     } finally {
       setLoading(false);
       setImage(null);
@@ -97,6 +142,9 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
         latitude: selectedLocation.coordinates.latitude,
         longitude: selectedLocation.coordinates.longitude,
       });
+      setIsLocationSelected(true);
+    } else {
+      setIsLocationSelected(false);
     }
   };
 
@@ -112,9 +160,17 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
       );
       setSelectedLocation(null);
       setAutoDetectedLocation(null);
+      setIsLocationSelected(false);
     } catch (error) {
       console.error('Error deleting location:', error);
       alert('Something went wrong');
+      Toast.show({
+        type: 'error',
+        text1: 'Location Error',
+        text2: 'Something went wrong',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     }
   };
 
@@ -137,6 +193,13 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
       return responseData.secure_url;
     } catch (error) {
       console.error('Error uploading to Cloudinary:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Upload Error',
+        text2: 'Something went wrong',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
       throw error;
     }
   };
@@ -154,6 +217,13 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
         .select();
     } catch (error) {
       console.error('Error saving location to Supabase:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Location Error',
+        text2: 'Error saving location',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
       throw error;
     }
   };
@@ -178,9 +248,13 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image}) => {
               {`Lat: ${autoDetectedLocation.latitude}, Long: ${autoDetectedLocation.longitude}`}
             </Text>
           )}
-          <TouchableOpacity style={styles.button} onPress={autoDetectLocation}>
-            <Text style={styles.buttonText}>Auto-Detect Location</Text>
-          </TouchableOpacity>
+          {!isLocationSelected && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={autoDetectLocation}>
+              <Text style={styles.buttonText}>Auto-Detect Location</Text>
+            </TouchableOpacity>
+          )}
           {savedLocations.length > 0 && (
             <View style={styles.pickerContainer}>
               <Picker
@@ -280,6 +354,13 @@ const styles = StyleSheet.create({
   },
   picker: {
     flex: 1,
+  },
+  text1: {
+    fontSize: 19,
+    fontWeight: 'bold',
+  },
+  text2: {
+    fontSize: 13,
   },
 });
 

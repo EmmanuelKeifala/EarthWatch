@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 const SavedLocations = ({navigation}) => {
   const [locationName, setLocationName] = useState('');
@@ -78,7 +79,13 @@ const SavedLocations = ({navigation}) => {
   const saveLocation = async () => {
     try {
       if (!locationName || !currentLocation) {
-        alert('Please enter a name and auto detect your location');
+        Toast.show({
+          type: 'info',
+          text1: 'Location and Location Name',
+          text2: 'Please enter a name and auto detect your location',
+          text1Style: styles.text1,
+          text2Style: styles.text2,
+        });
         return;
       }
 
@@ -111,7 +118,13 @@ const SavedLocations = ({navigation}) => {
   const updateLocation = async () => {
     try {
       if (!locationName || !currentLocation) {
-        alert('Please enter a name and auto detect your location');
+        Toast.show({
+          type: 'info',
+          text1: 'Location and Location Name',
+          text2: 'Please enter a name and auto detect your location',
+          text1Style: styles.text1,
+          text2Style: styles.text2,
+        });
         return;
       }
 
@@ -132,7 +145,13 @@ const SavedLocations = ({navigation}) => {
       setLocationName('');
       setCurrentLocation(null);
 
-      alert('Location updated successfully');
+      Toast.show({
+        type: 'success',
+        text1: 'Sumitted',
+        text2: 'Location updated successfully',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     } catch (error) {
       console.error('Error updating location:', error);
     }
@@ -150,7 +169,7 @@ const SavedLocations = ({navigation}) => {
       );
     } catch (error) {
       console.error('Error deleting location:', error);
-      alert('Something went wrong');
+      Toast.show({type: 'error', text1: 'Something went wrong'});
     }
   };
 
@@ -238,6 +257,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#3498db',
+    paddingTop: 10,
   },
   locationItem: {
     flexDirection: 'row',
@@ -282,6 +302,13 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  text1: {
+    fontSize: 19,
+    fontWeight: 'bold',
+  },
+  text2: {
+    fontSize: 13,
   },
 });
 
