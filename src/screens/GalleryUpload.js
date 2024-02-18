@@ -50,7 +50,7 @@ const GalleryUploads = () => {
         <Image
           source={{uri: selectedImage}}
           style={styles.image}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       </View>
     );

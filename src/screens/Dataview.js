@@ -64,6 +64,9 @@ const DataView = () => {
                 {truncateText(item.image_url, 25)}
               </Text>
             </TouchableOpacity>
+            {fetchData.length < 0 && (
+              <Text style={styles.tableHeader}>No data available</Text>
+            )}
           </View>
         ))}
       </View>

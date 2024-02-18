@@ -11,7 +11,6 @@ import {
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
-
 const SavedLocations = ({navigation}) => {
   const [locationName, setLocationName] = useState('');
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -66,11 +65,16 @@ const SavedLocations = ({navigation}) => {
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Highest,
+      });
+
       setCurrentLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
+
+      console.log('Location:', location);
     } catch (error) {
       console.error('Error getting location:', error);
     }

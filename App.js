@@ -21,7 +21,7 @@ const App = () => {
       </Stack.Navigator>
 
       <StatusBar style="dark" />
-      <Toast position="top" bottomOffset={30} swipeable={true} autoHide />
+      <Toast position="bottom" bottomOffset={30} swipeable={true} autoHide />
     </NavigationContainer>
   );
 };

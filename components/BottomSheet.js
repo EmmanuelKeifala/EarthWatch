@@ -40,7 +40,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
       const {status} = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
         const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Highest,
+          accuracy: Location.Accuracy.BestForNavigation,
         });
         setAutoDetectedLocation(location.coords);
       } else {
