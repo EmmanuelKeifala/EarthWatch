@@ -7,8 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Platform,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import RNPickerSelect from 'react-native-picker-select';
 
 import {Picker} from '@react-native-picker/picker';
 import * as Location from 'expo-location';
@@ -228,6 +230,11 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     }
   };
 
+  const locationItems = savedLocations.map(location => ({
+    key: location.name,
+    label: location.name,
+    value: location.name,
+  }));
   return (
     <BottomSheetModal
       ref={bottomSheetModalRef}
@@ -257,19 +264,18 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
           )}
           {savedLocations.length > 0 && (
             <View style={styles.pickerContainer}>
-              <Picker
-                style={styles.picker}
+              <RNPickerSelect
+                onValueChange={itemValue => handleLocationSelect(itemValue)}
                 selectedValue={selectedLocation}
-                onValueChange={itemValue => handleLocationSelect(itemValue)}>
-                <Picker.Item label="Select a Saved Location" value={null} />
-                {savedLocations.map(location => (
-                  <Picker.Item
-                    key={location.coordinates.latitude}
-                    label={location.name}
-                    value={location.name}
-                  />
-                ))}
-              </Picker>
+                placeholder={{
+                  label: !selectedLocation
+                    ? 'Select an Item'
+                    : selectedLocation,
+                  value: null,
+                }}
+                items={[...locationItems]}
+                style={pickerSelectStyles}
+              />
             </View>
           )}
           {savedLocations.length > 0 && (
@@ -345,9 +351,6 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
     marginBottom: 20,
     display: 'flex',
     justifyContent: 'center',
@@ -361,6 +364,28 @@ const styles = StyleSheet.create({
   },
   text2: {
     fontSize: 13,
+  },
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    color: 'black',
+    borderColor: '#ccc',
+    paddingRight: 30,
+    borderRadius: 10,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: 'black',
+    paddingRight: 30,
+    borderColor: '#ccc',
+    borderRadius: 10,
   },
 });
 
