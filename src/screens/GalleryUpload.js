@@ -17,8 +17,8 @@ const GalleryUploads = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const bottomSheetModalRef = useRef(null);
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  const takePicture = async () => {
+    const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
@@ -34,11 +34,11 @@ const GalleryUploads = () => {
 
   const renderDropZone = () => {
     return (
-      <TouchableOpacity style={styles.dropZone} onPress={pickImage}>
-        <Ionicons name="cloud-upload-outline" size={40} color="#3498db" />
-        <Text style={styles.dropZoneText}>Tap to Pick an Image</Text>
+      <TouchableOpacity style={styles.dropZone} onPress={takePicture}>
+        <Ionicons name="camera-outline" size={40} color="#3498db" />
+        <Text style={styles.dropZoneText}>Tap to Take a Picture</Text>
         <Text style={styles.instructionText}>
-          Select an image from your gallery to get started!
+          Capture an image using your camera to get started!
         </Text>
       </TouchableOpacity>
     );
