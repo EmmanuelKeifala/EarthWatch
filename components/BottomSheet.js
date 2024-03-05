@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {
   StyleSheet,
@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import RNPickerSelect from 'react-native-picker-select';
-
-import {Picker} from '@react-native-picker/picker';
+import * as Network from 'expo-network';
 import * as Location from 'expo-location';
 import {supabase} from '../src/lib/supabase';
 import LottieView from 'lottie-react-native';
@@ -25,6 +24,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [savedLocations, setSavedLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isLocationSelected, setIsLocationSelected] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     autoDetectLocation();
@@ -32,6 +32,16 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   useEffect(() => {
     loadSavedLocations();
   }, [savedLocations]);
+  useEffect(() => {
+    const checkConnectivity = async () => {
+      const currentNetworkStatus = await Network.getNetworkStateAsync();
+      setIsConnected(currentNetworkStatus);
+      if (isConnected.isConnected) {
+        await uploadData();
+      }
+    };
+    checkConnectivity();
+  }, []);
   const extractFilename = uri => {
     const parts = uri.split('/');
     return parts[parts.length - 1];
@@ -107,16 +117,26 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
         name: imageName,
       };
 
-      const url = await uploadToCloudinary(photo);
-
-      await saveLocationToSupabase(url);
-      Toast.show({
-        type: 'success',
-        text1: 'Location Submitted',
-        text2: 'Location submitted successfully!',
-        text1Style: styles.text1,
-        text2Style: styles.text2,
-      });
+      if (isConnected.isConnected) {
+        const url = await uploadToCloudinary(photo);
+        await saveLocationToSupabase(url);
+        Toast.show({
+          type: 'success',
+          text1: 'Location Submitted',
+          text2: 'Location submitted successfully!',
+          text1Style: styles.text1,
+          text2Style: styles.text2,
+        });
+      } else {
+        await saveDataOffline();
+        Toast.show({
+          type: 'success',
+          text1: 'Location Saved Offline',
+          text2: 'Location saved successfully!',
+          text1Style: styles.text1,
+          text2Style: styles.text2,
+        });
+      }
     } catch (error) {
       console.error('Error:', error);
       Toast.show({
@@ -230,11 +250,71 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     }
   };
 
+  const saveDataOffline = async () => {
+    try {
+      const existingData =
+        JSON.parse(await AsyncStorage.getItem('offlineData')) || [];
+      const imageData = image;
+      const localImageUrl = `local://${Date.now()}.jpg`;
+      await AsyncStorage.setItem(localImageUrl, imageData);
+      existingData.push({
+        location_name: locationName,
+        latitude: autoDetectedLocation?.latitude,
+        longitude: autoDetectedLocation?.longitude,
+        image_url: imageData,
+      });
+      await AsyncStorage.setItem('offlineData', JSON.stringify(existingData));
+
+      alert('Data Saved Offline', 'You can upload it later when online.');
+    } catch (error) {
+      console.error('Error saving data offline:', error);
+    }
+  };
+
   const locationItems = savedLocations.map(location => ({
     key: location.name,
     label: location.name,
     value: location.name,
   }));
+  const uploadToSupabase = async dataItem => {
+    try {
+      await supabase.from('dirtinfo').insert(dataItem);
+    } catch (error) {
+      console.error('Error uploading data to Supabase:', error);
+      throw error;
+    }
+  };
+
+  const uploadData = async () => {
+    try {
+      const offlineData = JSON.parse(await AsyncStorage.getItem('offlineData'));
+      if (offlineData && offlineData.length > 0) {
+        for (const dataItem of offlineData) {
+          const cloudinaryUrl = await uploadToCloudinary({
+            uri: dataItem.image_url,
+            type: 'image/jpeg',
+            name: extractFilename(dataItem.image_url),
+          });
+          dataItem.image_url = cloudinaryUrl;
+          await uploadToSupabase(dataItem);
+        }
+        await AsyncStorage.removeItem('offlineData');
+        Toast.show({
+          type: 'success',
+          text1: 'Data Uploaded',
+          text2: 'Your offline data has been successfully uploaded.',
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading data:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Upload Error',
+        text2: 'Something went wrong during data upload.',
+      });
+    }
+  };
+
   return (
     <BottomSheetModal
       ref={bottomSheetModalRef}
