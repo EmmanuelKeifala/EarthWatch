@@ -2,7 +2,7 @@
   "expo": {
     "name": "earthwatch",
     "slug": "earthwatch",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,7 +14,8 @@
     "plugins": [["expo-location"]],
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emmanueljahveh.earthwatch"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +24,7 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": ""
+          "apiKey": "AIzaSyBaAv4RLQ8ArUuGEpKdVzfvTbRCRCvFN1I"
         }
       },
       "permissions": [
