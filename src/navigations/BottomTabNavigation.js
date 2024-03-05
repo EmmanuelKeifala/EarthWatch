@@ -2,12 +2,19 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import GalleryUploads from '../screens/GalleryUpload';
 import DataView from '../screens/Dataview';
 import {StyleSheet, View} from 'react-native';
-import {AntDesign, FontAwesome5, Feather, Entypo} from '@expo/vector-icons';
+import {
+  AntDesign,
+  FontAwesome5,
+  Feather,
+  Entypo,
+  Ionicons,
+} from '@expo/vector-icons';
 import MapScreen from '../screens/MapScreen';
 import SavedLocations from '../screens/SavedLocations';
 import * as Network from 'expo-network';
 import {useState} from 'react';
 import {useEffect} from 'react';
+import Analytics from '../screens/Analytics';
 
 const Tab = createBottomTabNavigator();
 
@@ -102,6 +109,28 @@ const BottomTabs = () => {
           }}
         />
       )}
+      <Tab.Screen
+        name="Analytics"
+        component={Analytics}
+        options={{
+          tabBarShowLabel: false,
+          tabBarIcon: ({focused, color, size}) => {
+            return (
+              <View
+                style={[
+                  styles.activeTabBackground,
+                  focused ? {backgroundColor: '#3498db'} : {},
+                ]}>
+                <Ionicons
+                  name="analytics"
+                  size={30}
+                  color={focused ? 'white' : 'black'}
+                />
+              </View>
+            );
+          },
+        }}
+      />
       <Tab.Screen
         name="Locations"
         component={SavedLocations}
