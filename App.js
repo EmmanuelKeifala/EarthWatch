@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator();
 const App = () => {
-  const [onboardingViewed, setOnboardingViewed] = useState(null); // Change the initial state to null
+  const [onboardingViewed, setOnboardingViewed] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const App = () => {
         await AsyncStorage.getItem('onboardingViewed'),
       );
 
-      setOnboardingViewed(onboardingView ?? false); // Default to false if the value is null
+      setOnboardingViewed(onboardingView ?? false);
       setLoading(false);
     } catch (error) {
       console.error('Error checking onboarding status:', error);
@@ -31,7 +31,7 @@ const App = () => {
   };
 
   if (loading) {
-    return null; // Or a loading indicator
+    return null;
   }
 
   return (

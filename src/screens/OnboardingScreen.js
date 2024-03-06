@@ -1,18 +1,40 @@
+import React, {useEffect} from 'react';
 import {StyleSheet, Text, View, Dimensions, Image} from 'react-native';
-import React from 'react';
 import Onboarding from 'react-native-onboarding-swiper';
 import LottieView from 'lottie-react-native';
 import {useNavigation} from '@react-navigation/native';
 import {storeData} from '../lib/asyncStorage';
+import Animated, {
+  useSharedValue,
+  withSpring,
+  useAnimatedStyle,
+  useAnimatedEffect,
+} from 'react-native-reanimated';
 
 const {width, height} = Dimensions.get('window');
+
 const OnboardingScreen = () => {
   const navigation = useNavigation();
+  const imageOpacity = useSharedValue(0);
+
   const handleOnDone = () => {
     navigation.navigate('Tab');
     storeData('onboardingViewed', JSON.stringify(true));
   };
 
+  const animateImages = () => {
+    imageOpacity.value = withSpring(1, {damping: 10, stiffness: 100});
+  };
+
+  useEffect(() => {
+    animateImages();
+  }, []); // Run the animation once when the component mounts
+
+  const animatedImageStyle = useAnimatedStyle(() => {
+    return {
+      opacity: imageOpacity.value,
+    };
+  });
   return (
     <View style={styles.container}>
       <Onboarding
@@ -63,19 +85,19 @@ const OnboardingScreen = () => {
             backgroundColor: '#fff',
             image: (
               <View style={styles.imageContainer}>
-                <Image
+                <Animated.Image
                   source={require('../../assets/p1.jpg')}
-                  style={styles.image}
+                  style={[styles.image, animatedImageStyle]}
                   resizeMode="contain"
                 />
-                <Image
+                <Animated.Image
                   source={require('../../assets/p3.jpg')}
-                  style={styles.image}
+                  style={[styles.image, animatedImageStyle]}
                   resizeMode="contain"
                 />
-                <Image
+                <Animated.Image
                   source={require('../../assets/p2.jpg')}
-                  style={styles.image}
+                  style={[styles.image, animatedImageStyle]}
                   resizeMode="contain"
                 />
               </View>

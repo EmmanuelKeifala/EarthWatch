@@ -27,8 +27,10 @@ const BottomTabs = () => {
       setIsConnected(currentNetworkStatus);
     };
 
+    // Check connectivity on component mount
     handleConnectivityChange();
   }, []);
+
   return (
     <Tab.Navigator
       screenOptions={{

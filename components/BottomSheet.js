@@ -1,14 +1,12 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TextInput,
   TouchableOpacity,
-  Image,
-  Platform,
 } from 'react-native';
+import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import Toast from 'react-native-toast-message';
 import RNPickerSelect from 'react-native-picker-select';
 import * as Network from 'expo-network';
@@ -17,10 +15,12 @@ import {supabase} from '../src/lib/supabase';
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const OFFLINE_DATA_KEY = 'offlineData';
+
 const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [locationName, setLocationName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [autoDetectedLocation, setAutoDetectedLocation] = useState(null);
+  const [autoDetectedLocation, setAutoDetectedLocation] = useState({});
   const [savedLocations, setSavedLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isLocationSelected, setIsLocationSelected] = useState(false);
@@ -28,30 +28,27 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
 
   useEffect(() => {
     autoDetectLocation();
-    loadSavedLocations();
-    const connectivityInterval = setInterval(() => {
-      checkConnectivity();
-    }, 10000);
-
-    return () => clearInterval(connectivityInterval);
-  }, [navigation, savedLocations]);
+  }, [navigation]);
 
   useEffect(() => {
-    // Check connectivity on component mount
+    loadSavedLocations();
+  }, [savedLocations]);
+
+  useEffect(() => {
+    const checkConnectivity = async () => {
+      try {
+        const {isConnected} = await Network.getNetworkStateAsync();
+        setIsConnected(isConnected);
+        if (isConnected) {
+          await uploadData();
+        }
+      } catch (error) {
+        handleNetworkError();
+      }
+    };
     checkConnectivity();
   }, []);
 
-  const checkConnectivity = async () => {
-    try {
-      const currentNetworkStatus = await Network.getNetworkStateAsync();
-      setIsConnected(currentNetworkStatus);
-      if (isConnected.isConnected) {
-        await uploadData();
-      }
-    } catch (error) {
-      console.error('Error checking connectivity:', error);
-    }
-  };
   const extractFilename = uri => {
     const parts = uri.split('/');
     return parts[parts.length - 1];
@@ -66,24 +63,10 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
         });
         setAutoDetectedLocation(location.coords);
       } else {
-        console.log('Location permission denied');
-        Toast.show({
-          type: 'error',
-          text1: 'Permission',
-          text2: 'Location permission denied',
-          text1Style: styles.text1,
-          text2Style: styles.text2,
-        });
+        handleLocationPermissionDenied();
       }
     } catch (error) {
-      console.error('Error getting current location:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Location Error',
-        text2: 'Error getting current location',
-        text1Style: styles.text1,
-        text2Style: styles.text2,
-      });
+      handleLocationError('Error getting current location:', error);
     }
   };
 
@@ -95,14 +78,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
         setSavedLocations(parsedLocations);
       }
     } catch (error) {
-      console.error('Error loading saved locations from storage:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Location Error',
-        text2: 'Error loading saved locations',
-        text1Style: styles.text1,
-        text2Style: styles.text2,
-      });
+      handleLocationError('Error loading saved locations from storage:', error);
     }
   };
 
@@ -127,7 +103,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
         name: imageName,
       };
 
-      if (isConnected.isConnected) {
+      if (isConnected) {
         const url = await uploadToCloudinary(photo);
         await saveLocationToSupabase(url);
         Toast.show({
@@ -263,19 +239,35 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const saveDataOffline = async () => {
     try {
       const existingData =
-        JSON.parse(await AsyncStorage.getItem('offlineData')) || [];
+        JSON.parse(await AsyncStorage.getItem(OFFLINE_DATA_KEY)) || [];
       const imageData = image;
-      const localImageUrl = `local://${Date.now()}.jpg`;
-      await AsyncStorage.setItem(localImageUrl, imageData);
+      if (!locationName && !autoDetectedLocation) {
+        Toast.show({
+          type: 'error',
+          text1: 'Enter Valid location name',
+          text2: 'Error saving location',
+          text1Style: styles.text1,
+          text2Style: styles.text2,
+        });
+      }
       existingData.push({
         location_name: locationName,
         latitude: autoDetectedLocation?.latitude,
         longitude: autoDetectedLocation?.longitude,
         image_url: imageData,
       });
-      await AsyncStorage.setItem('offlineData', JSON.stringify(existingData));
+      await AsyncStorage.setItem(
+        OFFLINE_DATA_KEY,
+        JSON.stringify(existingData),
+      );
 
-      alert('Data Saved Offline', 'You can upload it later when online.');
+      Toast.show({
+        type: 'success',
+        text1: 'Data Saved Offline',
+        text2: 'You can upload it later when online.',
+        text1Style: styles.text1,
+        text2Style: styles.text2,
+      });
     } catch (error) {
       console.error('Error saving data offline:', error);
     }
@@ -286,6 +278,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     label: location.name,
     value: location.name,
   }));
+
   const uploadToSupabase = async dataItem => {
     try {
       await supabase.from('dirtinfo').insert(dataItem);
@@ -297,18 +290,22 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
 
   const uploadData = async () => {
     try {
-      const offlineData = JSON.parse(await AsyncStorage.getItem('offlineData'));
+      const offlineData = JSON.parse(
+        await AsyncStorage.getItem(OFFLINE_DATA_KEY),
+      );
       if (offlineData && offlineData.length > 0) {
-        for (const dataItem of offlineData) {
-          const cloudinaryUrl = await uploadToCloudinary({
-            uri: dataItem.image_url,
-            type: 'image/jpeg',
-            name: extractFilename(dataItem.image_url),
-          });
-          dataItem.image_url = cloudinaryUrl;
-          await uploadToSupabase(dataItem);
-        }
-        await AsyncStorage.removeItem('offlineData');
+        await Promise.all(
+          offlineData.map(async dataItem => {
+            const cloudinaryUrl = await uploadToCloudinary({
+              uri: dataItem.image_url,
+              type: 'image/jpeg',
+              name: extractFilename(dataItem.image_url),
+            });
+            dataItem.image_url = cloudinaryUrl;
+            await uploadToSupabase(dataItem);
+          }),
+        );
+        await AsyncStorage.removeItem(OFFLINE_DATA_KEY);
         Toast.show({
           type: 'success',
           text1: 'Data Uploaded',
@@ -363,7 +360,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
                     : selectedLocation,
                   value: null,
                 }}
-                items={[...locationItems]}
+                items={locationItems}
                 style={pickerSelectStyles}
               />
             </View>
@@ -444,9 +441,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     display: 'flex',
     justifyContent: 'center',
-  },
-  picker: {
-    flex: 1,
   },
   text1: {
     fontSize: 19,
