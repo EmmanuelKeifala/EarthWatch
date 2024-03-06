@@ -28,20 +28,30 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
 
   useEffect(() => {
     autoDetectLocation();
-  }, [navigation]);
-  useEffect(() => {
     loadSavedLocations();
-  }, [savedLocations]);
+    const connectivityInterval = setInterval(() => {
+      checkConnectivity();
+    }, 10000);
+
+    return () => clearInterval(connectivityInterval);
+  }, [navigation, savedLocations]);
+
   useEffect(() => {
-    const checkConnectivity = async () => {
+    // Check connectivity on component mount
+    checkConnectivity();
+  }, []);
+
+  const checkConnectivity = async () => {
+    try {
       const currentNetworkStatus = await Network.getNetworkStateAsync();
       setIsConnected(currentNetworkStatus);
       if (isConnected.isConnected) {
         await uploadData();
       }
-    };
-    checkConnectivity();
-  }, []);
+    } catch (error) {
+      console.error('Error checking connectivity:', error);
+    }
+  };
   const extractFilename = uri => {
     const parts = uri.split('/');
     return parts[parts.length - 1];

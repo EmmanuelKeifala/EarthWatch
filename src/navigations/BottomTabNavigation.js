@@ -109,28 +109,30 @@ const BottomTabs = () => {
           }}
         />
       )}
-      <Tab.Screen
-        name="Analytics"
-        component={Analytics}
-        options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({focused, color, size}) => {
-            return (
-              <View
-                style={[
-                  styles.activeTabBackground,
-                  focused ? {backgroundColor: '#3498db'} : {},
-                ]}>
-                <Ionicons
-                  name="analytics"
-                  size={30}
-                  color={focused ? 'white' : 'black'}
-                />
-              </View>
-            );
-          },
-        }}
-      />
+      {/* {isConnected.isConnected && (
+        <Tab.Screen
+          name="Analytics"
+          component={Analytics}
+          options={{
+            tabBarShowLabel: false,
+            tabBarIcon: ({focused, color, size}) => {
+              return (
+                <View
+                  style={[
+                    styles.activeTabBackground,
+                    focused ? {backgroundColor: '#3498db'} : {},
+                  ]}>
+                  <Ionicons
+                    name="analytics"
+                    size={30}
+                    color={focused ? 'white' : 'black'}
+                  />
+                </View>
+              );
+            },
+          }}
+        />
+      )} */}
       <Tab.Screen
         name="Locations"
         component={SavedLocations}

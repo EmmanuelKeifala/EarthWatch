@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Dimensions, StyleSheet, Text, View} from 'react-native';
-import {BarChart} from 'react-native-gifted-charts';
+import {BarChart} from 'react-native-chart-kit';
 import Geocoding from 'react-native-geocoding';
 import getData from '../lib/getData';
 const {width} = Dimensions.get('window');
@@ -51,14 +51,12 @@ const Analytics = () => {
         const entry = fetchData.find(
           entry => entry.location_name === locationName,
         );
-        console.log(entry);
         if (entry) {
           const {latitude, longitude} = entry;
           try {
             const response = await Geocoding.from({latitude, longitude});
-            console.log(response);
             const address =
-              response.results[0].address_components[2].short_name; // Assuming the first result is the most accurate
+              response.results[0].address_components[2].short_name;
             return {locationName, address};
           } catch (error) {
             console.error('Error getting address:', error);
@@ -96,28 +94,42 @@ const Analytics = () => {
           Total Data Entries: {fetchData.length}
         </Text>
       </View>
-
-      <BarChart
-        height={250}
-        showFractionalValues
-        showYAxisIndices
-        hideRules
-        noOfSections={4}
-        data={barChartData}
-        width={width / 1.5}
-        isAnimated
-        renderTooltip={({label, value}) => (
-          <Text
-            style={{
-              paddingTop: 5,
-              fontWeight: 'bold',
-              flexWrap: 'wrap',
-            }}
-            numberOfLines={2}>
-            {`${label}: ${value}`}
-          </Text>
-        )}
-      />
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+        }}>
+        <Text style={styles.dataCountText}>Entries Per Section</Text>
+        <BarChart
+          style={{
+            width: '100%',
+            borderRadius: 10,
+            alignItems: 'center',
+          }}
+          data={{
+            labels: barChartData.map(item => item.label),
+            datasets: [
+              {
+                data: barChartData.map(item => item.value),
+              },
+            ],
+          }}
+          width={width / 1.2}
+          height={220}
+          yAxisLabel=""
+          chartConfig={{
+            backgroundGradientFrom: 'black',
+            backgroundGradientFromOpacity: 0.8,
+            backgroundGradientTo: '#4285f4',
+            backgroundGradientToOpacity: 0.5,
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White text color
+            strokeWidth: 5,
+            barPercentage: 1,
+          }}
+          fromZero={true}
+          verticalLabelRotation={4.4}
+        />
+      </View>
     </View>
   );
 };
