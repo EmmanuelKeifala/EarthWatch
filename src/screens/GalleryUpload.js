@@ -21,6 +21,8 @@ const GalleryUploads = () => {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
+      exif: true,
+      cameraType: ImagePicker.CameraType.back,
     });
 
     if (!result.canceled) {

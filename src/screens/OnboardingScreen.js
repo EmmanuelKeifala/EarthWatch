@@ -75,9 +75,9 @@ const OnboardingScreen = () => {
             title: <Text style={styles.title}>About the App</Text>,
             subtitle: (
               <Text style={styles.description}>
-                This app is about taking photos of plastic and rubber waste in
-                freetown, the main goal is to see how clean or dirty the city is
-                from the data we are collecting
+                Help us clean up Freetown! This app lets you snap pics of
+                plastic and rubber waste you see around the city. By working
+                together, we can track pollution and make Freetown even cleaner!
               </Text>
             ),
           },

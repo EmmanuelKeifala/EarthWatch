@@ -26,6 +26,9 @@ const MAP_MARKER_DATA = [
   {
     name: 'Biossed',
   },
+  {
+    name: 'Others',
+  },
 ];
 const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [locationName, setLocationName] = useState('');
@@ -36,6 +39,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [isLocationSelected, setIsLocationSelected] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState();
+  const [otherGroup, setOtherGroup] = useState(null);
 
   useEffect(() => {
     autoDetectLocation();
@@ -232,9 +236,10 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
           latitude: autoDetectedLocation?.latitude,
           longitude: autoDetectedLocation?.longitude,
           image_url: url,
-          group: selectedGroup,
+          group: otherGroup === null ? selectedGroup : otherGroup,
         })
         .select();
+      handleDeleteLocation();
     } catch (error) {
       console.error('Error saving location to Supabase:', error);
       Toast.show({
@@ -267,6 +272,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
         latitude: autoDetectedLocation?.latitude,
         longitude: autoDetectedLocation?.longitude,
         image_url: imageData,
+        group: otherGroup,
       });
       await AsyncStorage.setItem(
         OFFLINE_DATA_KEY,
@@ -344,7 +350,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     <BottomSheetModal
       ref={bottomSheetModalRef}
       index={0}
-      snapPoints={['48%', '60%', '65%']}>
+      snapPoints={['48%', '60%', '65%', '70%']}>
       {!loading ? (
         <View style={styles.container}>
           <Text style={styles.heading}>Submission Page</Text>
@@ -380,6 +386,14 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
               style={pickerSelectStyles}
             />
           </View>
+          {selectedGroup === 'Others' && (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Group Name"
+              value={otherGroup}
+              onChangeText={text => setOtherGroup(text)}
+            />
+          )}
           {savedLocations.length > 0 && (
             <View style={styles.pickerContainer}>
               <RNPickerSelect

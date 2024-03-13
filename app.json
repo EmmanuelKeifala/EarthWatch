@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "earthwatch",
-    "slug": "earthwatch",
+    "name": "DirtSpotIdentifer",
+    "slug": "dirtspotidentifer",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,11 +11,17 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [["expo-location"]],
-    "assetBundlePatterns": ["**/*"],
+    "plugins": [
+      [
+        "expo-location"
+      ]
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emmanueljahveh.earthwatch"
+      "bundleIdentifier": "com.emmanueljahveh.dirtspotidentifer"
     },
     "android": {
       "adaptiveIcon": {
@@ -34,14 +40,14 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
       ],
-      "package": "com.emmanueljahveh.earthwatch"
+      "package": "com.emmanueljahveh.dirtspotidentifer"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "3428c0fe-92e0-4942-b1f5-64d56c05c420"
+        "projectId": "002388bb-7d31-46e7-9322-414c6a2bef6d"
       }
     },
     "runtimeVersion": {
@@ -49,6 +55,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/3428c0fe-92e0-4942-b1f5-64d56c05c420"
-    }
+    },
+    "owner": "kello"
   }
 }

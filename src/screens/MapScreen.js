@@ -62,7 +62,6 @@ const MapScreen = () => {
               coordinate={markerLatLng}
               title={item.location_name}
               onPress={() => handleMarkerPress(item)}
-              // icon={require('../../assets/pin1.png')}
               icon={
                 item.group === 'Limkokwing'
                   ? require('../../assets/pin2.png')
@@ -70,7 +69,7 @@ const MapScreen = () => {
                   ? require('../../assets/pin1.png')
                   : item.group === 'Biossed'
                   ? require('../../assets/pin3.png')
-                  : ''
+                  : require('../../assets/pin4.png')
               }></Marker>
           );
         })}

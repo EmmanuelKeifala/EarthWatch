@@ -8,8 +8,6 @@ import {
   Linking,
 } from 'react-native';
 import getData from '../lib/getData';
-import {LineChart} from 'react-native-charts-wrapper';
-
 const DataView = () => {
   const [fetchData, setFetchData] = useState([]);
 
