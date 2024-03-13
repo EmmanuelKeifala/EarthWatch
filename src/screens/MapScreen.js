@@ -61,7 +61,17 @@ const MapScreen = () => {
               key={index}
               coordinate={markerLatLng}
               title={item.location_name}
-              onPress={() => handleMarkerPress(item)}></Marker>
+              onPress={() => handleMarkerPress(item)}
+              // icon={require('../../assets/pin1.png')}
+              icon={
+                item.group === 'Limkokwing'
+                  ? require('../../assets/pin2.png')
+                  : item.group === 'Lion Pride'
+                  ? require('../../assets/pin1.png')
+                  : item.group === 'Biossed'
+                  ? require('../../assets/pin3.png')
+                  : ''
+              }></Marker>
           );
         })}
       </MapView>
@@ -79,7 +89,7 @@ const MapScreen = () => {
                     {selectedMarker.location_name}
                   </Text>
                   <TouchableOpacity onPress={() => setModalVisible(false)}>
-                    <Ionicons name="close" size={30} color="black" />
+                    <Ionicons name="close" size={30} />
                   </TouchableOpacity>
                 </View>
 
@@ -87,6 +97,15 @@ const MapScreen = () => {
                   source={{uri: selectedMarker.image_url}}
                   style={styles.image}
                 />
+                <Text
+                  style={{
+                    marginTop: 10,
+                    fontWeight: '600',
+                    fontStyle: 'italic',
+                    fontSize: 10,
+                  }}>
+                  Uploaded by: {selectedMarker.group}
+                </Text>
               </View>
             )}
           </View>

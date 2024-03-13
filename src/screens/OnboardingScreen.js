@@ -64,7 +64,7 @@ const OnboardingScreen = () => {
             image: (
               <View style={styles.lottie}>
                 <LottieView
-                  source={require('../../assets/animations/About.json')}
+                  source={require('../../assets/animations/recycle.json')}
                   autoPlay
                   loop
                   style={{width: '100%', height: '100%'}}
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 28,
     marginBottom: 10,
-    color: '#493d8a',
+    color: '#4285f4',
     textAlign: 'center',
   },
   description: {

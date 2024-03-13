@@ -16,7 +16,17 @@ import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OFFLINE_DATA_KEY = 'offlineData';
-
+const MAP_MARKER_DATA = [
+  {
+    name: 'Limkokwing',
+  },
+  {
+    name: 'Lion Pride',
+  },
+  {
+    name: 'Biossed',
+  },
+];
 const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [locationName, setLocationName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +35,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isLocationSelected, setIsLocationSelected] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState();
 
   useEffect(() => {
     autoDetectLocation();
@@ -83,19 +94,12 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
   };
 
   const handleSubmit = async () => {
-    if (!locationName || locationName.trim() === '') {
-      Toast.show({
-        type: 'info',
-        text1: 'Location and Location name',
-        text2: 'Please enter a valid location name before submitting',
-        text1Style: styles.text1,
-        text2Style: styles.text2,
-      });
-      return;
-    }
-
-    setLoading(true);
     try {
+      if (!locationName.trim() || !selectedGroup) {
+        throw new Error('Fill the form correctly');
+      }
+
+      setLoading(true);
       const imageName = extractFilename(image);
       const photo = {
         uri: image,
@@ -124,11 +128,11 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error:', error.message || 'Something went wrong');
       Toast.show({
         type: 'error',
         text1: 'Upload Error',
-        text2: 'Something went wrong',
+        text2: error.message || 'Something went wrong',
         text1Style: styles.text1,
         text2Style: styles.text2,
       });
@@ -154,6 +158,13 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     } else {
       setIsLocationSelected(false);
     }
+  };
+
+  const handleGroupSelection = value => {
+    setSelectedGroup(value);
+    const selectedGroup = MAP_MARKER_DATA.find(
+      markerData => markerData.name === value,
+    );
   };
 
   const handleDeleteLocation = async () => {
@@ -221,6 +232,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
           latitude: autoDetectedLocation?.latitude,
           longitude: autoDetectedLocation?.longitude,
           image_url: url,
+          group: selectedGroup,
         })
         .select();
     } catch (error) {
@@ -279,6 +291,12 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     value: location.name,
   }));
 
+  const markerItems = MAP_MARKER_DATA.map(markerData => ({
+    key: markerData.name,
+    label: markerData.name,
+    value: markerData.name,
+  }));
+
   const uploadToSupabase = async dataItem => {
     try {
       await supabase.from('dirtinfo').insert(dataItem);
@@ -326,7 +344,7 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
     <BottomSheetModal
       ref={bottomSheetModalRef}
       index={0}
-      snapPoints={['48%', '60%']}>
+      snapPoints={['48%', '60%', '65%']}>
       {!loading ? (
         <View style={styles.container}>
           <Text style={styles.heading}>Submission Page</Text>
@@ -349,6 +367,19 @@ const BottomSheet = ({bottomSheetModalRef, setImage, image, navigation}) => {
               <Text style={styles.buttonText}>Auto-Detect Location</Text>
             </TouchableOpacity>
           )}
+
+          <View style={styles.pickerContainer}>
+            <RNPickerSelect
+              onValueChange={itemValue => handleGroupSelection(itemValue)}
+              selectedValue={MAP_MARKER_DATA}
+              placeholder={{
+                label: 'Select your group',
+                value: null,
+              }}
+              items={markerItems}
+              style={pickerSelectStyles}
+            />
+          </View>
           {savedLocations.length > 0 && (
             <View style={styles.pickerContainer}>
               <RNPickerSelect
@@ -441,6 +472,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     display: 'flex',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: '#ccc',
   },
   text1: {
     fontSize: 19,
